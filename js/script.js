@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { DragControls } from "three/addons/controls/DragControls.js";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { FirstPersonControls } from "three/addons/controls/FirstPersonControls.js"; // Import FirstPersonControls
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
@@ -25,22 +24,12 @@ scene.add(directionalLight);
 const loader = new GLTFLoader();
 
 loader.load(
-  "models/interior4.gltf",
+  "models/MILANO-test.gltf",
   function (gltf) {
     const model = gltf.scene;
     model.position.set(0, 0, 0);
     model.scale.set(2, 2, 2);
     scene.add(model);
-
-    const dragControls = new DragControls([model], camera, renderer.domElement);
-    dragControls.addEventListener("dragstart", function () {
-      controls.enabled = false;
-    });
-    dragControls.addEventListener("dragend", function () {
-      controls.enabled = true;
-    });
-
-    animate();
   },
   undefined,
   function (e) {
@@ -48,49 +37,76 @@ loader.load(
   }
 );
 
-camera.position.set(0, 3, 5);
+loader.load(
+  "models/interior4.gltf",
+  function (gltf) {
+    const model = gltf.scene;
+    model.position.set(15, 0, 0);
+    model.scale.set(2, 2, 2);
+    scene.add(model);
+  },
+  undefined,
+  function (e) {
+    console.error(e);
+  }
+);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.25;
-controls.screenSpacePanning = false;
-controls.enableZoom = false;
+camera.position.set(0, 1.6, 5); // Set camera height to simulate a first-person view
 
-const keys = {};
-const speed = 0.2;
+// Initialize FirstPersonControls
+const controls = new FirstPersonControls(camera, renderer.domElement);
+controls.movementSpeed = 0.2; // Adjust movement speed
+controls.lookSpeed = 0.01; // Adjust look speed
+controls.noFly = true; // Prevent flying
+controls.lookVertical = true; // Allow vertical looking
+controls.constrainVertical = true; // Constrain vertical looking
+controls.verticalMin = Math.PI / 4; // Limit looking up
+controls.verticalMax = Math.PI / 2; // Limit looking down
+controls.autoForward = false;
+controls.activeLook = false;
 
-window.addEventListener("keydown", (e) => {
-  keys[e.key] = true;
-});
+let isMouseMoving = false;
+let lastMouseX = 0;
+let lastMouseY = 0;
+let mouseSpeed = 0;
 
-window.addEventListener("keyup", (e) => {
-  keys[e.key] = false;
-});
+function onMouseMove(event) {
+  if (document.pointerLockElement) {
+    const deltaX = event.movementX;
+    const deltaY = event.movementY;
+
+    // Calculate mouse speed
+    mouseSpeed = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    controls.activeLook = true; // Enable active look when mouse is moved
+  }
+}
+
+document.body.addEventListener("click", lockMouse);
+document.addEventListener("mousemove", onMouseMove);
 
 function animate() {
   requestAnimationFrame(animate);
 
-  const direction = new THREE.Vector3();
-  camera.getWorldDirection(direction);
-  direction.y = 0;
-  direction.normalize();
-
-  const right = new THREE.Vector3();
-  right.crossVectors(direction, new THREE.Vector3(0, 1, 0));
-
-  if (keys["w"] || keys["ArrowUp"]) {
-    camera.position.add(direction.clone().multiplyScalar(speed));
-  }
-  if (keys["s"] || keys["ArrowDown"]) {
-    camera.position.add(direction.clone().multiplyScalar(-speed));
-  }
-  if (keys["a"] || keys["ArrowLeft"]) {
-    camera.position.add(right.clone().multiplyScalar(-speed));
-  }
-  if (keys["d"] || keys["ArrowRight"]) {
-    camera.position.add(right.clone().multiplyScalar(speed));
+  // checkMouseMovement();
+  controls.lookSpeed = mouseSpeed * 0.01;
+  // Update controls
+  if (document.pointerLockElement) {
+    controls.update(0.1); // Pass delta time if needed
   }
 
-  controls.update();
   renderer.render(scene, camera);
 }
+
+// Lock the mouse for a true FPS experience
+function lockMouse() {
+  document.body.requestPointerLock();
+}
+
+// Handle window resize
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+animate();

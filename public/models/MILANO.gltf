@@ -154,22 +154,22 @@
     {
       "mimeType": "image/png",
       "name": "Image_3",
-      "uri": "Image_3.png"
+      "uri": "../textures/Image_3.png"
     },
     {
       "mimeType": "image/png",
       "name": "Image_2",
-      "uri": "Image_2.png"
+      "uri": "../textures/Image_2.png"
     },
     {
       "mimeType": "image/png",
       "name": "Image_1",
-      "uri": "Image_1.png"
+      "uri": "../textures/Image_1.png"
     },
     {
       "mimeType": "image/png",
       "name": "Image_0",
-      "uri": "Image_0.png"
+      "uri": "../textures/Image_0.png"
     }
   ],
   "accessors": [
