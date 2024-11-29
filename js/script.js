@@ -63,44 +63,15 @@ controls.constrainVertical = true; // Constrain vertical looking
 controls.verticalMin = Math.PI / 4; // Limit looking up
 controls.verticalMax = Math.PI / 2; // Limit looking down
 controls.autoForward = false;
-controls.activeLook = false;
-
-let isMouseMoving = false;
-let lastMouseX = 0;
-let lastMouseY = 0;
-let mouseSpeed = 0;
-
-function onMouseMove(event) {
-  if (document.pointerLockElement) {
-    const deltaX = event.movementX;
-    const deltaY = event.movementY;
-
-    // Calculate mouse speed
-    mouseSpeed = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-    controls.activeLook = true; // Enable active look when mouse is moved
-  }
-}
-
-document.body.addEventListener("click", lockMouse);
-document.addEventListener("mousemove", onMouseMove);
-
-function animate() {
-  requestAnimationFrame(animate);
-
-  // checkMouseMovement();
-  controls.lookSpeed = mouseSpeed * 0.01;
-  // Update controls
-  if (document.pointerLockElement) {
-    controls.update(0.1); // Pass delta time if needed
-  }
-
-  renderer.render(scene, camera);
-}
+controls.activeLook = true; // Enable active look by default
 
 // Lock the mouse for a true FPS experience
 function lockMouse() {
   document.body.requestPointerLock();
 }
+
+// Handle mouse movement
+document.body.addEventListener("click", lockMouse);
 
 // Handle window resize
 window.addEventListener("resize", () => {
@@ -108,5 +79,33 @@ window.addEventListener("resize", () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+let isMouseMoving = false;
+let mouseMoveTimeout;
+
+document.addEventListener("mousemove", () => {
+  isMouseMoving = true;
+  if (mouseMoveTimeout) {
+    clearTimeout(mouseMoveTimeout);
+  }
+  mouseMoveTimeout = setTimeout(() => {
+    isMouseMoving = false; // Set to false after a period of inactivity
+  }, 100); // Adjust the timeout duration as needed
+});
+
+const initialY = camera.position.y;
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  // Update controls
+  if (isMouseMoving) {
+    controls.update(0.1); // Pass delta time if needed
+  }
+
+  camera.position.y = initialY;
+
+  renderer.render(scene, camera);
+}
 
 animate();
