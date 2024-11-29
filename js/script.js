@@ -17,7 +17,7 @@ document.body.appendChild(renderer.domElement);
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
 directionalLight.position.set(5, 10, 7.5);
 scene.add(directionalLight);
 
@@ -80,6 +80,12 @@ window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+let isMouseLocked = false;
+
+document.addEventListener("pointerlockchange", () => {
+  isMouseLocked = document.pointerLockElement === document.body;
+});
+
 let isMouseMoving = false;
 let mouseMoveTimeout;
 
@@ -98,11 +104,11 @@ const initialY = camera.position.y;
 function animate() {
   requestAnimationFrame(animate);
 
-  // Update controls
-  if (isMouseMoving) {
+  controls.update(0.1); // Pass delta time if needed
+
+  if (isMouseLocked) {
     controls.update(0.1); // Pass delta time if needed
   }
-
   camera.position.y = initialY;
 
   renderer.render(scene, camera);
