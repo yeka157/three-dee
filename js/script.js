@@ -51,27 +51,19 @@ loader.load(
   }
 );
 
-camera.position.set(0, 1.6, 5); // Set camera height to simulate a first-person view
+camera.position.set(0, 2.5, 5); // Set camera height to simulate a first-person view
 
 // Initialize FirstPersonControls
 const controls = new FirstPersonControls(camera, renderer.domElement);
 controls.movementSpeed = 0.2; // Adjust movement speed
-controls.lookSpeed = 0.01; // Adjust look speed
+controls.lookSpeed = 0.01; // Adjust look speed for better control
 controls.noFly = true; // Prevent flying
 controls.lookVertical = true; // Allow vertical looking
-controls.constrainVertical = true; // Constrain vertical looking
-controls.verticalMin = Math.PI / 4; // Limit looking up
-controls.verticalMax = Math.PI / 2; // Limit looking down
+controls.constrainVertical = false; // Allow full vertical looking
+controls.verticalMin = -Math.PI / 2; // Allow looking straight up
+controls.verticalMax = Math.PI / 2; // Allow looking straight down
 controls.autoForward = false;
 controls.activeLook = true; // Enable active look by default
-
-// Lock the mouse for a true FPS experience
-function lockMouse() {
-  document.body.requestPointerLock();
-}
-
-// Handle mouse movement
-document.body.addEventListener("click", lockMouse);
 
 // Handle window resize
 window.addEventListener("resize", () => {
@@ -80,23 +72,18 @@ window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-let isMouseLocked = false;
-
-document.addEventListener("pointerlockchange", () => {
-  isMouseLocked = document.pointerLockElement === document.body;
-});
-
+// Mouse movement variables
 let isMouseMoving = false;
 let mouseMoveTimeout;
 
-document.addEventListener("mousemove", () => {
-  isMouseMoving = true;
+document.addEventListener("mousemove", (event) => {
+  isMouseMoving = true; // Set to true when mouse is moving
   if (mouseMoveTimeout) {
     clearTimeout(mouseMoveTimeout);
   }
   mouseMoveTimeout = setTimeout(() => {
     isMouseMoving = false; // Set to false after a period of inactivity
-  }, 100); // Adjust the timeout duration as needed
+  }, 100);
 });
 
 const initialY = camera.position.y;
@@ -104,11 +91,10 @@ const initialY = camera.position.y;
 function animate() {
   requestAnimationFrame(animate);
 
-  controls.update(0.1); // Pass delta time if needed
+  // Update controls for mouse movement
+  controls.update(0.1); // Update controls based on mouse movement
 
-  if (isMouseLocked) {
-    controls.update(0.1); // Pass delta time if needed
-  }
+  // Keep the camera's Y position constant
   camera.position.y = initialY;
 
   renderer.render(scene, camera);
