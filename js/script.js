@@ -17,8 +17,8 @@ document.body.appendChild(renderer.domElement);
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
-directionalLight.position.set(5, 10, 7.5);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(10, 10, 10).normalize();
 scene.add(directionalLight);
 
 const loader = new GLTFLoader();
@@ -38,11 +38,26 @@ loader.load(
 );
 
 loader.load(
-  "models/interior4.gltf",
+  "models/apartment.gltf",
   function (gltf) {
     const model = gltf.scene;
+
     model.position.set(15, 0, 0);
     model.scale.set(2, 2, 2);
+
+    model.traverse((child) => {
+      if (child.isMesh) {
+        const material = child.material;
+
+        if (child.name.includes("glass")) {
+          material.transparent = true;
+          material.opacity = 0.5; 
+          material.ior = 1.5;
+          material.envMapIntensity = 1;
+        }
+      }
+    });
+    // Add the model to the scene
     scene.add(model);
   },
   undefined,
@@ -55,8 +70,8 @@ camera.position.set(0, 2.5, 5); // Set camera height to simulate a first-person 
 
 // Initialize FirstPersonControls
 const controls = new FirstPersonControls(camera, renderer.domElement);
-controls.movementSpeed = 0.2; // Adjust movement speed
-controls.lookSpeed = 0.01; // Adjust look speed for better control
+controls.movementSpeed = 1; // Adjust movement speed
+controls.lookSpeed = 0.03; // Adjust look speed for better control
 controls.noFly = true; // Prevent flying
 controls.lookVertical = true; // Allow vertical looking
 controls.constrainVertical = false; // Allow full vertical looking
