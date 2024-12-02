@@ -216,13 +216,20 @@ loader.load(
     //   console.error(error);
     // }
 
-    gltf.scene.traverse((child) => {
+    model.traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
 
         if (child.material.map) {
           child.material.map.anisotropy = 4;
+        }
+
+        if (child.name.includes("glass")) {
+          child.material.transparent = true;
+          child.material.opacity = 0.5;
+          child.material.ior = 1.5;
+          child.material.envMapIntensity = 1;
         }
       }
     });
